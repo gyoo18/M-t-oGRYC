@@ -32,10 +32,22 @@ public class Champ2V2 {
      * @return - Échantillon du champ.
      */
     public Vecteur2D c(double x, double y){
-        int x0 = (int)Math.floor(x*nX);
-        int x1 = x0 + 1;
-        int y0 = (int)Math.floor(y*nY);
-        int y1 = y0 + 1;
+        int x0 = (int)Math.floor(x*(double)(nX-1));
+        int x1;
+        if(x0 != nX){
+            x1 = x0 + 1;
+        }else{
+            x1 = x0;
+            x0 --;
+        }
+        int y0 = (int)Math.floor(y*(double)(nY-1));
+        int y1;
+        if(y0 != nY){
+            y1 = y0 + 1;
+        }else{
+            y1 = y0;
+            y0 --;
+        }
 
         double mX = (double)x0/(x-(double)x0);
         double mY = (double)y0/(y-(double)y0);
@@ -151,6 +163,10 @@ public class Champ2V2 {
                 }else if( y == 0){
                     gradY1 = (c[x][y].y - c[x][y+1].y)/Dy;
                     gradY0 = gradY1;
+                }
+
+                if(gradX0 == 0 || gradX1 == 0 || gradY0 == 0 || gradY1 == 0){
+                    System.currentTimeMillis();
                 }
 
                 div.c[x][y] = (gradX0 + gradX1)/2.0 + (gradY0 + gradY1)/2.0;

@@ -57,9 +57,10 @@ public class App {
 
         Champ2V1 div = vélocité.div();
         Champ2V2 divVec = div.grad();
+        Champ2V2 velRot = vélocité.sous(divVec);
 
         while (true) {
-            dessinerChamp(div, g, frame);
+            dessinerChamp(divVec, g, frame);
             SwingUtilities.updateComponentTreeUI(frame);
             Thread.sleep(30);
         }
