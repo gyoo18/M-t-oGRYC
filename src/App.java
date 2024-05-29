@@ -42,47 +42,55 @@ public class App {
         g.setColor(Color.red);
         g.fillRect(0, 0, 100, 100);
 
-        Champ2V2 vélocité = new Champ2V2(TailleX, TailleY, 30, 30);
-        long timer = System.currentTimeMillis();
+        Champ2V2 vélocité = new Champ2V2(TailleX, TailleY, 40, 40);
         for (int x = 0; x < vélocité.c.length; x++) {
             for (int y = 0; y < vélocité.c[x].length; y++) {
-                vélocité.c[x][y] = new Vecteur2D(((double)x/(double)vélocité.nX - 0.5),((double)y/(double)vélocité.nY - 0.5)).norm().mult(10000.0);
-
-                if(System.currentTimeMillis() - timer > 5000){
-                    System.out.println("Initialisation vélocité : " + String.format("%.0f",100.0*(double)(x*vélocité.nX + y)/(double)(vélocité.nX*vélocité.nY)) + "%");
-                    timer = System.currentTimeMillis();
-                }
+                vélocité.c[x][y] = new Vecteur2D(((double)x/(double)vélocité.nX - 0.5),((double)y/(double)vélocité.nY - 0.5)).mult(100.0);
             }
         }
 
-        Champ2V1 div = vélocité.div();
-        Champ2V2 divVec = div.grad();
-        Champ2V2 velRot = vélocité.sous(divVec);
-
         while (true) {
-            dessinerChamp(divVec, g, frame);
+            for (int x = 0; x < vélocité.c.length; x++) {
+                for (int y = 0; y < vélocité.c[x].length; y++) {
+                    vélocité.c[x][y].rot(0.05);
+                }
+            }
+            if(vélocité.c[0][0].longueur() < 0.01){
+                System.currentTimeMillis();
+            }
+            Champ2V1 div = vélocité.Div();
+            //Champ2V2 divVec = div.grad();
+            //Champ2V2 velRot = Champ2V2.sous(vélocité,divVec);
+            dessinerChamp(div, 2, g, frame);
             SwingUtilities.updateComponentTreeUI(frame);
             Thread.sleep(30);
         }
     }
 
-    public static void dessinerChamp(Champ2V2 champ, Graphics2D g, JFrame frame){
-        int cL = (int)((double)TailleX/(double)champ.nX);
-        int cH = (int)((double)TailleY/(double)champ.nX);
-        for (int x = 0; x < champ.c.length; x++) {
-            for (int y = 0; y < champ.c[x].length; y++) {
+    public static void dessinerChamp(Champ2V2 champ, int saut, Graphics2D g, JFrame frame){
+        double cL = (double)TailleX/(double)champ.nX;
+        double cH = (double)TailleY/(double)champ.nX;
+        for (int x = 0; x < champ.nX; x++) {
+            for (int y = 0; y < champ.nY; y++) {
                 g.setColor(new Color((int)((1.0-1.0/(Math.abs(champ.c[x][y].x)+1.0))*255.0),(int)((1.0-1.0/(Math.abs(champ.c[x][y].y)+1.0))*255.0),0));
-                g.fillRect(x*cL, TailleY - (y+1)*cH, cL, cH);
+                g.fillRect((int)((double)x*cL), TailleY - (int)((double)(y+1)*cH), (int)Math.ceil(cL), (int)Math.ceil(cH));
                 //SwingUtilities.updateComponentTreeUI(frame);
             }
         }
+        cL = (int)((double)saut*(double)TailleX/((double)champ.nX));
+        cH = (int)((double)saut*(double)TailleY/((double)champ.nX));
         g.setColor(Color.red);
-        for (int x = 0; x < champ.c.length; x++) {
-            for (int y = 0; y < champ.c[x].length; y++) {
-                int a = x*cL + (cL/2);
-                int b = TailleY - (y+1)*cH + (cH/2);
-                int c = x*cL + (cL/2) + (int)((1.0-1.0/(Math.abs(champ.c[x][y].x)+1.0))*(double)cL*Math.signum(champ.c[x][y].x));
-                int d = TailleY - (y+1)*cH + (cH/2) - (int)((1.0-1.0/(Math.abs(champ.c[x][y].y)+1.0))*(double)cH*Math.signum(champ.c[x][y].y));
+        for (int x = 0; x < champ.nX/saut; x++) {
+            for (int y = 0; y < champ.nY/saut; y++) {
+                Vecteur2D V = champ.c((double)(x*saut)/(double)champ.nX,(double)(y*saut)/(double)champ.nY).copier();
+                double L = V.longueur();
+                V.norm();
+                int lX = (int)((1.0-1.0/(L+1.0))*Math.min(cL, cH)*V.x);
+                int lY = (int)((1.0-1.0/(L+1.0))*Math.min(cL, cH)*V.y);
+                int a = (int)((double)x*cL + (cL/2.0));
+                int b = (int)((double)TailleY - (double)(y+1)*cH + (cH/2.0));
+                int c = (int)((double)x*cL + (cL/2) + lX);
+                int d = (int)((double)TailleY - (double)(y+1)*cH + (cH/2.0) - lY);
                 g.drawLine(a, b, c, d);
                 //SwingUtilities.updateComponentTreeUI(frame);
             }
@@ -90,14 +98,14 @@ public class App {
         System.currentTimeMillis();
     }
 
-    public static void dessinerChamp(Champ2V1 champ, Graphics2D g, JFrame frame){
-        int cL = (int)((double)TailleX/(double)champ.nX);
-        int cH = (int)((double)TailleY/(double)champ.nX);
+    public static void dessinerChamp(Champ2V1 champ, int saut, Graphics2D g, JFrame frame){
+        double cL = (double)TailleX/(double)champ.nX;
+        double cH = (double)TailleY/(double)champ.nX;
         for (int x = 0; x < champ.c.length; x++) {
             for (int y = 0; y < champ.c[x].length; y++) {
                 int col = (int)((1.0-1.0/(Math.abs(champ.c[x][y])+1.0))*255.0);
                 g.setColor(new Color(col,col,col));
-                g.fillRect(x*cL, TailleY - (y+1)*cH, cL, cH);
+                g.fillRect((int)((double)x*cL), TailleY - (int)((double)(y+1)*cH), (int)Math.ceil(cL), (int)Math.ceil(cH));
                 //SwingUtilities.updateComponentTreeUI(frame);
             }
         }

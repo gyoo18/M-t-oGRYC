@@ -106,6 +106,14 @@ public class Vecteur2D {
         return this.copier();
     }
 
+    public void rot(double angle){
+        double rx = x*Math.cos(angle) - y*Math.sin(angle);
+        double ry = x*Math.sin(angle) + y*Math.cos(angle);
+        x = rx;
+        y = ry;
+        //return this.copier();
+    }
+
     /**
      * Retourne l'addition des vecteurs a et b
      * @param a
