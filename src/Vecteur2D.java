@@ -51,7 +51,7 @@ public class Vecteur2D {
     public Vecteur2D addi(Vecteur2D b){
         x += b.x;
         y += b.y;
-        return this.copier();
+        return this;
     }
 
     /**
@@ -61,7 +61,7 @@ public class Vecteur2D {
     public Vecteur2D sous(Vecteur2D b){
         x -= b.x;
         y -= b.y;
-        return this.copier();
+        return this;
     }
 
     /**
@@ -71,7 +71,7 @@ public class Vecteur2D {
     public Vecteur2D mult(double s){
         x *= s;
         y *= s;
-        return this.copier();
+        return this;
     }
 
     /**
@@ -82,7 +82,7 @@ public class Vecteur2D {
     public Vecteur2D mult(Vecteur2D m){
         x *= m.x;
         y *= m.y;
-        return this.copier();
+        return this;
     }
 
     /**
@@ -93,7 +93,7 @@ public class Vecteur2D {
     public Vecteur2D div(Vecteur2D d){
         x = x/d.x;
         y = y/d.y;
-        return this.copier();
+        return this;
     }
 
     /**
@@ -103,15 +103,15 @@ public class Vecteur2D {
         double l = longueur();
         x = x/l;
         y = y/l;
-        return this.copier();
+        return this;
     }
 
-    public void rot(double angle){
+    public Vecteur2D rot(double angle){
         double rx = x*Math.cos(angle) - y*Math.sin(angle);
         double ry = x*Math.sin(angle) + y*Math.cos(angle);
         x = rx;
         y = ry;
-        //return this.copier();
+        return this;
     }
 
     /**
