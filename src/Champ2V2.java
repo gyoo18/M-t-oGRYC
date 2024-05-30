@@ -11,6 +11,7 @@ public class Champ2V2 {
         L = largeur;
         H = hauteur;
         c = new Vecteur2D[nX][nY];
+        remplir(new Vecteur2D(0.0));
     }
 
     public Champ2V2(Champ2V2 v){
@@ -56,10 +57,26 @@ public class Champ2V2 {
         double mX = Math.clamp((x*(double)(nX-1)-(double)x0),0.0,1.0);
         double mY = Math.clamp((y*(double)(nY-1)-(double)y0),0.0,1.0);
 
-        c[x0][y0] = (v.copier().mult(1.0-mX).addi(c[x0][y0].mult(mX))).mult(1.0-mY).addi(c[x0][y0].mult(mY));
-        c[x1][y0] = (c[x1][y0].mult(1.0-mX).addi(v.copier().mult(mX))).mult(1.0-mY).addi(c[x1][y0].mult(mY));
-        c[x0][y1] = (c[x0][y1]).mult(1.0-mY).addi(v.copier().mult(1.0-mX).addi(c[x0][y1].mult(mX)).mult(mY));
-        c[x1][y1] = (c[x1][y1]).mult(1.0-mY).addi(c[x1][y1].mult(1.0-mX).addi(v.copier().mult(mX)).mult(mY));
+        c[x0][y0] = v.copier().mult(1.0-mX).mult(1.0-mY);
+        c[x1][y0] = v.copier().mult(mX).mult(1.0-mY);
+        c[x0][y1] = v.copier().mult(1.0-mX).mult(mY);
+        c[x1][y1] = v.copier().mult(mX).mult(mY);
+        return this;
+    }
+
+    public Champ2V2 cA(double x, double y, Vecteur2D v){
+        int x0 = Math.clamp((int)Math.floor(x*(double)(nX-1)),0, nX-1);
+        int x1 = Math.clamp(x0 + 1,0, nX-1);
+        int y0 = Math.clamp((int)Math.floor(y*(double)(nY-1)),0,nY-1);
+        int y1 = Math.clamp(y0 + 1,0,nY-1);
+
+        double mX = Math.clamp((x*(double)(nX-1)-(double)x0),0.0,1.0);
+        double mY = Math.clamp((y*(double)(nY-1)-(double)y0),0.0,1.0);
+
+        c[x0][y0].addi( v.copier().mult(1.0-mX).mult(1.0-mY) );
+        c[x1][y0].addi( v.copier().mult(mX).mult(1.0-mY) );
+        c[x0][y1].addi( v.copier().mult(1.0-mX).mult(mY) );
+        c[x1][y1].addi( v.copier().mult(mX).mult(mY) );
         return this;
     }
 
@@ -405,9 +422,9 @@ public class Champ2V2 {
         return this;
     }
 
-    public Champ2V2 retirerDiv(){
+    public Champ2V2 retirerDiv(int iter){
         Champ2V2 tmp = new Champ2V2(this);
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < iter; i++) {
             for (int x = 0; x < nX; x++) {
                 for (int y = 0; y < nY; y++) {
                     double va = 0.0;
@@ -421,36 +438,36 @@ public class Champ2V2 {
                     double n = 0.0;
                     if(x != 0){
                         va = -c[x-1][y].x;
-                        n++;
                     }
+                    n++;
                     if(x != nX-1){
                         vb = c[x+1][y].x;
-                        n++;
                     }
+                    n++;
                     if(y != 0){
                         vc = -c[x][y-1].y;
-                        n++;
                     }
+                    n++;
                     if(y != nY-1){
                         vd = c[x][y+1].y;
-                        n++;
                     }
+                    n++;
                     if(x != 0 && y != 0){
                         ve = V2.scal(new V2(-1.0,-1.0).norm(),c[x-1][y-1]);
-                        n+=1.91;
                     }
+                    n+=1.91;
                     if(x != nX-1 && y != 0){
                         vf = V2.scal(new V2(1.0,-1.0).norm(),c[x+1][y-1]);
-                        n+=1.91;
                     }
+                    n+=1.91;
                     if(x != 0 && y != nY-1){
                         vg = V2.scal(new V2(-1.0,1.0).norm(),c[x-1][y+1]);
-                        n+=1.91;
                     }
+                    n+=1.91;
                     if(x != nX-1 && y != nY-1){
                         vh = V2.scal(new V2(1.0,1.0).norm(),c[x+1][y+1]);
-                        n+=1.91;
                     }
+                    n+=1.91;
                     double D = (va+vb+vc+vd+ve+vf+vg+vh)/(double)n;
                     if(x != 0){
                         tmp.c[x-1][y].addi(new Vecteur2D(D,0.0));
@@ -478,9 +495,10 @@ public class Champ2V2 {
                     }
                 }
             }
+            //double facteur = 1.0;
+            //copier(tmp.mult(new V2(facteur)).addi(this.mult(new V2(1.0-facteur))));
+            copier(tmp);
         }
-        double facteur = 1.0;
-        copier(tmp.mult(new V2(facteur)).addi(this.mult(new V2(1.0-facteur))));
         return this;
     }
 

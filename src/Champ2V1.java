@@ -11,6 +11,7 @@ public class Champ2V1 {
         L = largeur;
         H = hauteur;
         c = new double[nX][nY];
+        remplir(0);
     }
 
     public Champ2V1(Champ2V1 v){
@@ -56,10 +57,10 @@ public class Champ2V1 {
         double mX = Math.clamp((x*(double)(nX-1)-(double)x0),0.0,1.0);
         double mY = Math.clamp((y*(double)(nY-1)-(double)y0),0.0,1.0);
 
-        c[x0][y0] = (1.0-mY)*((1.0-mX)*v + mX*c[x0][y0]) + mY*c[x0][y0];
-        c[x1][y0] = (1.0-mY)*((1.0-mX)*c[x1][y0] + mX*v) + mY*c[x1][y0];
-        c[x0][y1] = (1.0-mY)*c[x0][y1] + mY*((1.0-mX)*v + mX*c[x0][y1]);
-        c[x1][y1] = (1.0-mY)*c[x1][y1] + mY*((1.0-mX)*c[x1][y1] + mX*v);
+        c[x0][y0] = (1.0-mX)*(1.0-mY)*v;
+        c[x1][y0] = mX*(1.0-mY)*v;
+        c[x0][y1] = (1.0-mX)*mY*v;
+        c[x1][y1] = mX*mY*v;
         return this;
     }
 
@@ -72,10 +73,10 @@ public class Champ2V1 {
         double mX = Math.clamp((x*(double)(nX-1)-(double)x0),0.0,1.0);
         double mY = Math.clamp((y*(double)(nY-1)-(double)y0),0.0,1.0);
 
-        c[x0][y0] = (1.0-mY)*((1.0-mX)*(v+c[x0][y0]) + mX*c[x0][y0]) + mY*c[x0][y0];
-        c[x1][y0] = (1.0-mY)*((1.0-mX)*c[x1][y0] + mX*(v+c[x1][y0])) + mY*c[x1][y0];
-        c[x0][y1] = (1.0-mY)*c[x0][y1] + mY*((1.0-mX)*(v+c[x0][y1]) + mX*c[x0][y1]);
-        c[x1][y1] = (1.0-mY)*c[x1][y1] + mY*((1.0-mX)*c[x1][y1] + mX*(v+c[x1][y1]));
+        c[x0][y0] += (1.0-mX)*(1.0-mY)*v;
+        c[x1][y0] += mX*(1.0-mY)*v;
+        c[x0][y1] += (1.0-mX)*mY*v;
+        c[x1][y1] += mX*mY*v;
         return this;
     }
 
@@ -220,7 +221,12 @@ public class Champ2V1 {
         this.nY = v.nY;
         this.L = v.L;
         this.H = v.H;
-        this.c = v.c.clone();
+        this.c = new double[v.nX][v.nY];
+        for (int i = 0; i < c.length; i++) {
+            for (int j = 0; j < c.length; j++) {
+                this.c[i][j] = v.c[i][j];
+            }
+        }
     }
 
     public Champ2V1 copier(){
