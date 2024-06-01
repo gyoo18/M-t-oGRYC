@@ -81,8 +81,8 @@ public class Champ2V2 {
     }
 
     public Champ2V2 addi(Champ2V2 v){
-        for (int x = 0; x < v.nX; x++) {
-            for (int y = 0; y < v.nY; y++) {
+        for (int x = 0; x < nX; x++) {
+            for (int y = 0; y < nY; y++) {
                 c[x][y].addi( v.c((double)x/(double)(v.nX-1),(double)y/(double)(v.nY-1)) );
             }
         }
@@ -91,8 +91,8 @@ public class Champ2V2 {
     }
     
     public Champ2V2 addi(Vecteur2D v){
-        for (int x = 0; x < c.length; x++) {
-            for (int y = 0; y < c[x].length; y++) {
+        for (int x = 0; x < nX; x++) {
+            for (int y = 0; y < nY; y++) {
                 c[x][y].addi(v);
             }
         }
@@ -160,38 +160,36 @@ public class Champ2V2 {
         return this;
     }
 
-    public Champ2V1 Div(){
+    public Champ2V1 Div(Champ2V1 obstacle){
         Champ2V1 div = new Champ2V1(L, H, nY, nX);
         double Dx = L/(double)nX;
         double Dy = H/(double)nY;
-        for (int x = 0; x < c.length; x++) {
-            for (int y = 0; y < c[x].length; y++) {
-                double gradX1 = 0;
-                double gradX0 = 0;
-                double gradY1 = 0;
-                double gradY0 = 0;
-                if(x + 1 < c.length && x - 1 >= 0){
-                    gradX1 = (c[x][y].x - c[x+1][y].x)/Dx;
-                    gradX0 = (c[x][y].x - c[x-1][y].x)/-Dx;
-                }else if(x + 1 >= c.length){
-                    gradX0 = (c[x][y].x - c[x-1][y].x)/-Dx;
-                    gradX1 = gradX0;
-                }else if( x == 0){
-                    gradX1 = (c[x][y].x - c[x+1][y].x)/Dx;
-                    gradX0 = gradX1;
+        for (int x = 0; x < nX; x++) {
+            for (int y = 0; y < nY; y++) {
+                double gradX1 = 0.0;
+                double gradX0 = 0.0;
+                double gradY1 = 0.0;
+                double gradY0 = 0.0;
+                double n_X = 0.0;
+                double n_Y = 0.0;
+                if(x > 0 && (obstacle == null || obstacle.c[x-1][y] > 0.001)){
+                    gradX0 = (c[x][y].x - c[x-1][y].x);
+                    n_X++;
                 }
-                if(y + 1 < c[y].length && y - 1 >= 0){
-                    gradY1 = (c[x][y].y - c[x][y+1].y)/Dy;
-                    gradY0 = (c[x][y].y - c[x][y-1].y)/-Dy;
-                }else if(y + 1 >= c[x].length){
-                    gradY0 = (c[x][y].y - c[x][y-1].y)/-Dy;
-                    gradY1 = gradY0;
-                }else if( y == 0){
-                    gradY1 = (c[x][y].y - c[x][y+1].y)/Dy;
-                    gradY0 = gradY1;
+                if( x < nX-1 && (obstacle == null || obstacle.c[x+1][y] > 0.001)){
+                    gradX1 = -(c[x][y].x - c[x+1][y].x);
+                    n_X++;
+                }
+                if(y > 0 && (obstacle == null || obstacle.c[x][y-1] > 0.001)){
+                    gradY0 = (c[x][y].y - c[x][y-1].y);
+                    n_Y++;
+                }
+                if( y < nY-1 && (obstacle == null || obstacle.c[x][y+1] > 0.001)){
+                    gradY1 = -(c[x][y].y - c[x][y+1].y);
+                    n_Y++;
                 }
 
-                div.c[x][y] = (gradX0 + gradX1)/2.0 + (gradY0 + gradY1)/2.0;
+                div.c[x][y] = (gradX0 + gradX1)/(n_X*Dx) + (gradY0 + gradY1)/(n_Y*Dy);
             }
         }
 
@@ -324,7 +322,7 @@ public class Champ2V2 {
         return r;
     }
 
-    public static Champ2V1 Div(Champ2V2 u){
+    public static Champ2V1 Div(Champ2V2 u, Champ2V1 obstacle){
         Champ2V1 div = new Champ2V1(u.L, u.H, u.nY, u.nX);
         double Dx = u.L/(double)u.nX;
         double Dy = u.H/(double)u.nY;
@@ -334,32 +332,25 @@ public class Champ2V2 {
                 double gradX0 = 0;
                 double gradY1 = 0;
                 double gradY0 = 0;
-                if(x + 1 < u.c.length && x - 1 >= 0){
-                    gradX1 = (u.c[x][y].x - u.c[x+1][y].x)/Dx;
+                double n = 0.0;
+                if(x >= u.nX-1){
                     gradX0 = (u.c[x][y].x - u.c[x-1][y].x)/-Dx;
-                }else if(x + 1 >= u.c.length){
-                    gradX0 = (u.c[x][y].x - u.c[x-1][y].x)/-Dx;
-                    gradX1 = gradX0;
-                }else if( x == 0){
-                    gradX1 = (u.c[x][y].x - u.c[x+1][y].x)/Dx;
-                    gradX0 = gradX1;
+                    n++;
                 }
-                if(y + 1 < u.c[y].length && y - 1 >= 0){
-                    gradY1 = (u.c[x][y].y - u.c[x][y+1].y)/Dy;
+                if( x == 0){
+                    gradX1 = (u.c[x][y].x - u.c[x+1][y].x)/Dx;
+                    n++;
+                }
+                if(y + 1 >= u.c[x].length){
                     gradY0 = (u.c[x][y].y - u.c[x][y-1].y)/-Dy;
-                }else if(y + 1 >= u.c[x].length){
-                    gradY0 = (u.c[x][y].y - u.c[x][y-1].y)/-Dy;
-                    gradY1 = gradY0;
-                }else if( y == 0){
+                    n++;
+                }
+                if( y == 0){
                     gradY1 = (u.c[x][y].y - u.c[x][y+1].y)/Dy;
-                    gradY0 = gradY1;
+                    n++;
                 }
 
-                if(gradX0 == 0 || gradX1 == 0 || gradY0 == 0 || gradY1 == 0){
-                    System.currentTimeMillis();
-                }
-
-                div.c[x][y] = (gradX0 + gradX1)/2.0 + (gradY0 + gradY1)/2.0;
+                div.c[x][y] = (gradX0 + gradX1 + gradY0 + gradY1)/n;
             }
         }
 
@@ -422,8 +413,7 @@ public class Champ2V2 {
         return this;
     }
 
-    public Champ2V2 retirerDiv(int iter){
-        Champ2V2 tmp = new Champ2V2(this);
+    public Champ2V2 retirerDiv(int iter, Champ2V1 obstacle){
         for (int i = 0; i < iter; i++) {
             for (int x = 0; x < nX; x++) {
                 for (int y = 0; y < nY; y++) {
@@ -436,68 +426,71 @@ public class Champ2V2 {
                     double vg = 0.0;
                     double vh = 0.0;
                     double n = 0.0;
-                    if(x != 0){
+                    if(x != 0 && (obstacle == null || obstacle.c[x-1][y] > 0.001)){
                         va = -c[x-1][y].x;
+                        n++;
                     }
-                    n++;
-                    if(x != nX-1){
+                    if(x != nX-1 && (obstacle == null || obstacle.c[x+1][y] > 0.001)){
                         vb = c[x+1][y].x;
+                        n++;
                     }
-                    n++;
-                    if(y != 0){
+                    if(y != 0 && (obstacle == null || obstacle.c[x][y-1] > 0.001)){
                         vc = -c[x][y-1].y;
+                        n++;
                     }
-                    n++;
-                    if(y != nY-1){
+                    if(y != nY-1 && (obstacle == null || obstacle.c[x][y+1] > 0.001)){
                         vd = c[x][y+1].y;
+                        n++;
                     }
-                    n++;
-                    if(x != 0 && y != 0){
-                        ve = V2.scal(new V2(-1.0,-1.0).norm(),c[x-1][y-1]);
+                    //if(x != 0 && y != 0 && obstacle != null && obstacle.c[x-1][y-1] > 0.001){
+                    //    ve = V2.scal(new V2(-1.0,-1.0).norm(),c[x-1][y-1]);
+                    //    n+=1.91;
+                    //}
+                    //if(x != nX-1 && y != 0 && obstacle != null && obstacle.c[x+1][y-1] > 0.001){
+                    //    vf = V2.scal(new V2(1.0,-1.0).norm(),c[x+1][y-1]);
+                    //    n+=1.91;
+                    //}
+                    //if(x != 0 && y != nY-1 && obstacle != null && obstacle.c[x-1][y+1] > 0.001){
+                    //    vg = V2.scal(new V2(-1.0,1.0).norm(),c[x-1][y+1]);
+                    //    n+=1.91;
+                    //}
+                    //if(x != nX-1 && y != nY-1 && obstacle != null && obstacle.c[x+1][y+1] > 0.001){
+                    //    vh = V2.scal(new V2(1.0,1.0).norm(),c[x+1][y+1]);
+                    //    n+=1.91;
+                    //}
+                    double D = (1.0/(double)iter)*(va+vb+vc+vd+ve+vf+vg+vh)/(double)n;
+                    //tmp.c[x][y].addi(new Vecteur2D(-D,-D));
+                    if(x != 0 && (obstacle == null || obstacle.c[x-1][y] > 0.001)){
+                        c[x-1][y].addi(new Vecteur2D(D,0.0));
                     }
-                    n+=1.91;
-                    if(x != nX-1 && y != 0){
-                        vf = V2.scal(new V2(1.0,-1.0).norm(),c[x+1][y-1]);
+                    if(x != nX-1 && (obstacle == null || obstacle.c[x+1][y] > 0.001)){
+                        c[x+1][y].addi(new Vecteur2D(-D,0.0));
                     }
-                    n+=1.91;
-                    if(x != 0 && y != nY-1){
-                        vg = V2.scal(new V2(-1.0,1.0).norm(),c[x-1][y+1]);
+                    if(y != 0 && (obstacle == null || obstacle.c[x][y-1] > 0.001)){
+                        c[x][y-1].addi(new Vecteur2D(0.0,D));
                     }
-                    n+=1.91;
-                    if(x != nX-1 && y != nY-1){
-                        vh = V2.scal(new V2(1.0,1.0).norm(),c[x+1][y+1]);
+                    if(y != nY-1 && (obstacle == null || obstacle.c[x][y+1] > 0.001)){
+                        c[x][y+1].addi(new Vecteur2D(0.0,-D));
                     }
-                    n+=1.91;
-                    double D = (va+vb+vc+vd+ve+vf+vg+vh)/(double)n;
-                    if(x != 0){
-                        tmp.c[x-1][y].addi(new Vecteur2D(D,0.0));
-                    }
-                    if(x != nX-1){
-                        tmp.c[x+1][y].addi(new Vecteur2D(-D,0.0));
-                    }
-                    if(y != 0){
-                        tmp.c[x][y-1].addi(new Vecteur2D(0.0,D));
-                    }
-                    if(y != nY-1){
-                        tmp.c[x][y+1].addi(new Vecteur2D(0.0,-D));
-                    }
-                    if(x != 0 && y != 0){
-                        tmp.c[x-1][y-1].addi(new Vecteur2D(1.0,1.0).norm().mult(D));
-                    }
-                    if(x != nX-1 && y != 0){
-                        tmp.c[x+1][y-1].addi(new Vecteur2D(-1.0,1.0).norm().mult(D));
-                    }
-                    if(x != 0 && y != nY-1){
-                        tmp.c[x-1][y+1].addi(new Vecteur2D(1.0,-1.0).norm().mult(D));
-                    }
-                    if(x != nX-1 && y != nY-1){
-                        tmp.c[x+1][y+1].addi(new Vecteur2D(-1.0,-1.0).norm().mult(D));
+                    //if(x != 0 && y != 0 && obstacle != null && obstacle.c[x-1][y-1] > 0.001){
+                    //    tmp.c[x-1][y-1].addi(new Vecteur2D(1.0,1.0).norm().mult(D));
+                    //}
+                    //if(x != nX-1 && y != 0 && obstacle != null && obstacle.c[x+1][y-1] > 0.001){
+                    //    tmp.c[x+1][y-1].addi(new Vecteur2D(-1.0,1.0).norm().mult(D));
+                    //}
+                    //if(x != 0 && y != nY-1 && obstacle != null && obstacle.c[x-1][y+1] > 0.001){
+                    //    tmp.c[x-1][y+1].addi(new Vecteur2D(1.0,-1.0).norm().mult(D));
+                    //}
+                    //if(x != nX-1 && y != nY-1 && obstacle != null && obstacle.c[x+1][y+1] > 0.001){
+                    //    tmp.c[x+1][y+1].addi(new Vecteur2D(-1.0,-1.0).norm().mult(D));
+                    //}
+                    if(obstacle != null && obstacle.c[x][y] < 0.001){
+                        c[x][y] = new Vecteur2D(0.0);
                     }
                 }
             }
             //double facteur = 1.0;
             //copier(tmp.mult(new V2(facteur)).addi(this.mult(new V2(1.0-facteur))));
-            copier(tmp);
         }
         return this;
     }

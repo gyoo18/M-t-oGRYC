@@ -13,19 +13,39 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 
 public class App {
-    public static int TailleX = 512;
-    public static int TailleY = 512;
+    public static int TailleX = 800-100;
+    public static int TailleY = 800-100;
     public static void main(String[] args) throws Exception {
         System.out.println("Hello, World!");
 
-        Champ2V2 vélocité = new Champ2V2(TailleX, TailleY, 256, 256);
-        Vecteur2D dir = new Vecteur2D(0,100.0).rot(Math.PI/8.0);
-        Champ2V1 fumée = new Champ2V1(TailleX, TailleY,256,256);
-        for (int x = -0; x <= 0; x++) {
-            for (int y = -0; y <= 0; y++) {
-                fumée.c[fumée.nX/2 + x][fumée.nY/2 + y] = 10.0;
+        Champ2V2 vélocité = new Champ2V2(TailleX, TailleY, 512, 512);
+        Vecteur2D dir = new Vecteur2D(0,3.0); //.rot(Math.PI/8.0);
+        Champ2V1 fumée = new Champ2V1(TailleX, TailleY,512,512);
+        Champ2V1 pression = new Champ2V1(TailleX,TailleY,512,512);
+        //pression.remplir(1.0);
+        //for (int x = -0; x <= 0; x++) {
+        //    for (int y = -0; y <= 0; y++) {
+        //        fumée.c[fumée.nX/2 + x][fumée.nY/2 + y] = 10.0;
+        //    }
+        //}
+
+        Champ2V1 obstacle = new Champ2V1(TailleX, TailleY,512,512);
+        obstacle.remplir(1.0);
+        for (int x = -20; x <= 20; x++) {
+            for (int y = -20; y <= 20; y++) {
+                if(x*x + y*y <= 20*20){
+                    obstacle.c[24 + x][obstacle.nY/2 + y] = 0.0;
+                }
             }
         }
+
+        //for (int x = 0; x < vélocité.nX; x++) {
+        //    for (int y = 0; y < vélocité.nY; y++) {
+        //        vélocité.c[x][y] = new Vecteur2D(Math.random()*2.0-1.0,Math.random()*2.0-1.0).norm();
+        //    }
+        //}
+
+        vélocité.c[vélocité.nX/2][vélocité.nY/2] = dir.copier();
 
         BoucleDessin bd = new BoucleDessin();
         bd.miseÀJour(vélocité, fumée);
@@ -33,23 +53,28 @@ public class App {
         thread.start();
 
         while (true) {
-            for (int N2 = 0; N2 < 10; N2++) {
-                for (int x = 0; x < vélocité.nX; x++) {
-                    for (int y = 0; y < vélocité.nY; y++) {
-                        if( x == 0 || y == 0 || y == vélocité.nY-1 || x == vélocité.nX-1){
-                            vélocité.c[x][y] = new Vecteur2D(10.0,0.0);
+            //Thread.sleep(100);
+            for (int x = 0; x < vélocité.nX; x++) {
+                for (int y = 0; y < vélocité.nY; y++) {
+                    if( x == 0 || y == 0 || y == vélocité.nY-1 || x == vélocité.nX-1){
+                        vélocité.c[x][y] = new Vecteur2D(Math.random()*10.0,0.0);
+                        if((double)y-(10.0*(double)Math.floor(y/10)) < 0.1){
+                            fumée.c[x][y] = 5.0; //Math.random()*5.0;
                         }
                     }
                 }
-                for (int x = -0; x <= 1; x++) {
-                    for (int y = -0; y <= 1; y++) {
-                        fumée.c[fumée.nX/2 + x][fumée.nY/2 + y] = Math.random()*5.0;
-                        vélocité.c[vélocité.nX/2 + x][vélocité.nY/2 + y] = dir.copier().mult(Math.random());
-                    }
-                }
-                vélocité.retirerDiv(1);
-                //vélocité.addi(vélocité.copier().Div().grad().mult(new Vecteur2D(1.0)));
-                vélocité.diffuser(3,0.001);
+            }
+            for (int N2 = 0; N2 < 10; N2++) {
+                //for (int x = -1; x <= 1; x++) {
+                //    for (int y = -1; y <= 1; y++) {
+                //        fumée.c[fumée.nX/2 + x][fumée.nY/2 + y] = Math.random()*5.0;
+                //        vélocité.c[vélocité.nX/2 + x][vélocité.nY/2 + y] = dir.rot(0.000005).copier().mult(Math.random());
+                //    }
+                //}
+                vélocité.retirerDiv(1, obstacle);
+                pression = vélocité.Div(obstacle).mult(-1.0);
+                //vélocité.addi( pression.grad(null).mult(new Vecteur2D(-1.0)));
+                //bd.miseÀJour(pression.grad(null).mult(new Vecteur2D(100000.0)), pression.copier().mult(100.0));
             }
             for (int N2 = 0; N2 < 10; N2++) {
                 Champ2V2 tmp = new Champ2V2(vélocité);
@@ -58,7 +83,7 @@ public class App {
                 //tmp2.remplir(0);
                 for (int x = 0; x < vélocité.nX; x++) {
                     for (int y = 0; y < vélocité.nY; y++) {
-                        Vecteur2D vel = vélocité.c((double)x/(double)(vélocité.nX-1), (double)y/(double)(vélocité.nY-1)).mult(0.05/10.0);
+                        Vecteur2D vel = vélocité.c((double)x/(double)(vélocité.nX-1), (double)y/(double)(vélocité.nY-1)).mult(1.0/10.0);
                         double éX = ((double)x/(double)(vélocité.nX-1))+((double)vel.x/vélocité.L);
                         double éY = ((double)y/(double)(vélocité.nY-1))+((double)vel.y/vélocité.H);
                         //if(éX >= 0.0 && éX <= 1.0 && éY >= 0.0 && éY <= 1.0){
@@ -74,13 +99,18 @@ public class App {
                         //    tmp2.c[x][y] = 0.0;
                         //}
                         tmp2.cA(éX,éY, fumée.c[x][y]);
-                        tmp2.c[x][y] -= fumée.c[x][y];                        
+                        tmp2.c[x][y] -= fumée.c[x][y];
+                        if(obstacle.c[x][y] < 0.001){
+                            tmp.c[x][y] = new Vecteur2D(0.0);
+                            tmp2.c[x][y] = 0.0;
+                        }                 
                     }
                 }
                 vélocité.copier(tmp);
                 fumée.copier(tmp2);
             }
-            fumée.diffuser(3, 0.01);
+            //fumée.diffuser(3, 0.01);
+            vélocité.diffuser(3, 0.01);
             bd.miseÀJour(vélocité, fumée);
             if(!thread.isAlive()){
                 thread = new Thread(bd);
@@ -137,7 +167,7 @@ public class App {
                     continue;
                 }
                 dessinerChamp(fumée, 1, g, frame);
-                dessinerChamp(vélocité, 7, g, frame);
+                dessinerChamp(vélocité, 14, g, frame);
                 SwingUtilities.updateComponentTreeUI(frame);
                 try {
                     Thread.sleep(30);
@@ -162,14 +192,14 @@ public class App {
         //}
         cL = (double)saut*(double)TailleX/(double)champ.nX;
         cH = (double)saut*(double)TailleY/(double)champ.nX;
-        g.setColor(Color.red);
+        g.setColor(Color.GREEN);
         for (int x = 0; x < champ.nX/saut; x++) {
             for (int y = 0; y < champ.nY/saut; y++) {
                 Vecteur2D V = champ.c((double)(x*saut)/(double)(champ.nX-1),(double)(y*saut)/(double)(champ.nY-1)).copier();
                 double L = V.longueur();
                 V.norm();
-                int lX = (int)((1.0-1.0/(L+1.0))*Math.min(cL, cH)*V.x);
-                int lY = (int)((1.0-1.0/(L+1.0))*Math.min(cL, cH)*V.y);
+                int lX = (int)((1.0-1.0/(L+1.0))*Math.min(cL, cH)*V.x*0.5);
+                int lY = (int)((1.0-1.0/(L+1.0))*Math.min(cL, cH)*V.y*0.5);
                 int a = (int)((double)x*cL) + (int)(cL/2.0);
                 int b = (int)((double)TailleY - (double)(y+1)*cH) + (int)(cH/2.0);
                 int c = (int)((double)x*cL + (cL/2) + lX);

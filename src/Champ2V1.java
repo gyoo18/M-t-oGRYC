@@ -160,38 +160,36 @@ public class Champ2V1 {
         return this.copier();
     }
 
-    public Champ2V2 grad(){
+    public Champ2V2 grad(Champ2V1 obstacle){
         Champ2V2 grad = new Champ2V2(L, H, nY, nX);
         double Dx = L/(double)nX;
         double Dy = H/(double)nY;
         for (int x = 0; x < c.length; x++) {
             for (int y = 0; y < c[x].length; y++) {
-                double gradX1 = 0;
-                double gradX0 = 0;
-                double gradY1 = 0;
-                double gradY0 = 0;
-                if(x + 1 < c.length && x - 1 >= 0){
-                    gradX1 = (c[x][y] - c[x+1][y])/Dx;
-                    gradX0 = (c[x][y] - c[x-1][y])/-Dx;
-                }else if(x + 1 >= c.length){
-                    gradX0 = (c[x][y] - c[x-1][y])/-Dx;
-                    gradX1 = gradX0;
-                }else if( x == 0){
-                    gradX1 = (c[x][y] - c[x+1][y])/Dx;
-                    gradX0 = gradX1;
+                double gradX1 = 0.0;
+                double gradX0 = 0.0;
+                double gradY1 = 0.0;
+                double gradY0 = 0.0;
+                double n_X = 0.0;
+                double n_Y = 0.0;
+                if(x > 0 && (obstacle == null || obstacle.c[x-1][y] > 0.001)){
+                    gradX0 = (c[x][y] - c[x-1][y]);
+                    n_X++;
                 }
-                if(y + 1 < c[y].length && y - 1 >= 0){
-                    gradY1 = (c[x][y] - c[x][y+1])/Dy;
-                    gradY0 = (c[x][y] - c[x][y-1])/-Dy;
-                }else if(y + 1 >= c[x].length){
-                    gradY0 = (c[x][y] - c[x][y-1])/-Dy;
-                    gradY1 = gradY0;
-                }else if( y == 0){
-                    gradY1 = (c[x][y] - c[x][y+1])/Dy;
-                    gradY0 = gradY1;
+                if( x < nX-1 && (obstacle == null || obstacle.c[x+1][y] > 0.001)){
+                    gradX1 = -(c[x][y] - c[x+1][y]);
+                    n_X++;
+                }
+                if(y > 0 && (obstacle == null || obstacle.c[x][y-1] > 0.001)){
+                    gradY0 = (c[x][y] - c[x][y-1]);
+                    n_Y++;
+                }
+                if( y < nY-1 && (obstacle == null || obstacle.c[x][y+1] > 0.001)){
+                    gradY1 = -(c[x][y] - c[x][y+1]);
+                    n_Y++;
                 }
 
-                grad.c[x][y] = new Vecteur2D((gradX0 + gradX1)/2.0,(gradY0 + gradY1)/2.0);
+                grad.c[x][y] = new Vecteur2D( (gradX0 + gradX1)/(n_X*Dx) , (gradY0 + gradY1)/(n_Y*Dy) );
             }
         }
 
