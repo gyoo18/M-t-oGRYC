@@ -161,7 +161,7 @@ public class Champ2V2 {
     }
 
     public Champ2V1 Div(Champ2V1 obstacle){
-        Champ2V1 div = new Champ2V1(L, H, nY, nX);
+        Champ2V1 div = new Champ2V1(L, H, nX, nY);
         double Dx = L/(double)nX;
         double Dy = H/(double)nY;
         for (int x = 0; x < nX; x++) {
@@ -189,7 +189,11 @@ public class Champ2V2 {
                     n_Y++;
                 }
 
-                div.c[x][y] = (gradX0 + gradX1)/(n_X*Dx) + (gradY0 + gradY1)/(n_Y*Dy);
+                if(obstacle.c[x][y] > 0.001){
+                    div.c[x][y] = (gradX0 + gradX1)/(n_X*Dx) + (gradY0 + gradY1)/(n_Y*Dy);
+                }else{
+                    div.c[x][y] = 0.0;
+                }
             }
         }
 

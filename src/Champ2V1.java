@@ -161,11 +161,11 @@ public class Champ2V1 {
     }
 
     public Champ2V2 grad(Champ2V1 obstacle){
-        Champ2V2 grad = new Champ2V2(L, H, nY, nX);
+        Champ2V2 grad = new Champ2V2(L, H, nX, nY);
         double Dx = L/(double)nX;
         double Dy = H/(double)nY;
-        for (int x = 0; x < c.length; x++) {
-            for (int y = 0; y < c[x].length; y++) {
+        for (int x = 0; x < grad.nX; x++) {
+            for (int y = 0; y < grad.nY; y++) {
                 double gradX1 = 0.0;
                 double gradX0 = 0.0;
                 double gradY1 = 0.0;
@@ -189,7 +189,11 @@ public class Champ2V1 {
                     n_Y++;
                 }
 
-                grad.c[x][y] = new Vecteur2D( (gradX0 + gradX1)/(n_X*Dx) , (gradY0 + gradY1)/(n_Y*Dy) );
+                if(obstacle.c[x][y] > 0.001){
+                    grad.c[x][y] = new Vecteur2D( (gradX0 + gradX1)/(n_X*Dx) , (gradY0 + gradY1)/(n_Y*Dy) );
+                }else{
+                    grad.c[x][y] = new Vecteur2D(0.0);
+                }
             }
         }
 
@@ -220,8 +224,8 @@ public class Champ2V1 {
         this.L = v.L;
         this.H = v.H;
         this.c = new double[v.nX][v.nY];
-        for (int i = 0; i < c.length; i++) {
-            for (int j = 0; j < c.length; j++) {
+        for (int i = 0; i < v.nX; i++) {
+            for (int j = 0; j < v.nY; j++) {
                 this.c[i][j] = v.c[i][j];
             }
         }
