@@ -190,9 +190,9 @@ public class Champ2V1 {
                 }
 
                 if(obstacle.c[x][y] > 0.001){
-                    grad.c[x][y] = new Vecteur2D( (gradX0 + gradX1)/(n_X*Dx) , (gradY0 + gradY1)/(n_Y*Dy) );
+                    grad.c(x,y, new Vecteur2D( (gradX0 + gradX1)/(n_X*Dx) , (gradY0 + gradY1)/(n_Y*Dy) ));
                 }else{
-                    grad.c[x][y] = new Vecteur2D(0.0);
+                    grad.c(x,y, new Vecteur2D(0.0));
                 }
             }
         }
