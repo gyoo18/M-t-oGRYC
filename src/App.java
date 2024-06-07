@@ -18,13 +18,13 @@ public class App {
     public static void main(String[] args) throws Exception {
         System.out.println("Hello, World!");
 
-        Champ2V2 vélocité = new Champ2V2(TailleX, TailleY, 128, 64);
+        Champ2V2 vélocité = new Champ2V2(TailleX, TailleY, 256, 128);
         vélocité.UtiliseFaces = true;
         vélocité.remplir(new Vecteur2D(0));
         //vélocité.remplir(new Vecteur2D(10.0,0.0));
-        Vecteur2D dir = new Vecteur2D(0,300.0); //.rot(Math.PI/8.0);
-        Champ2V1 fumée = new Champ2V1(TailleX, TailleY,128,64);
-        Champ2V1 pression = new Champ2V1(TailleX,TailleY,128,64);
+        Vecteur2D dir = new Vecteur2D(0,50.0); //.rot(Math.PI/8.0);
+        Champ2V1 fumée = new Champ2V1(TailleX, TailleY,256, 128);
+        Champ2V1 pression = new Champ2V1(TailleX,TailleY,256, 128);
         // pression.remplir(1.0);
         //for (int x = -0; x <= 0; x++) {
         //    for (int y = -0; y <= 0; y++) {
@@ -32,12 +32,12 @@ public class App {
         //    }
         //}
 
-        Champ2V1 obstacle = new Champ2V1(TailleX, TailleY,128,64);
+        Champ2V1 obstacle = new Champ2V1(TailleX, TailleY,256, 128);
         obstacle.remplir(1.0);
-        for (int x = -20; x <= 20; x++) {
-            for (int y = -20; y <= 20; y++) {
-                if(x*x + y*y <= 10*10){
-                    obstacle.c[15  + x][obstacle.nY/2 + y] = 0.0;
+        for (int x = -30; x <= 30; x++) {
+            for (int y = -30; y <= 30; y++) {
+                if(x*x + y*y <= 30*30){
+                    obstacle.c[40  + x][obstacle.nY/2 + y] = 0.0;
                 }
             }
         }
@@ -60,36 +60,70 @@ public class App {
             Double divergenceTotale = Double.MAX_VALUE;
             int iter = 0;
             //System.out.println("Hi");
-            dir.rot(0.001);
+            dir.rot(0.002);
             Champ2V2 velTMP = new Champ2V2(vélocité);
             for (int x = 0; x < vélocité.nX; x++) {
                 for (int y = 0; y < vélocité.nY; y++) {
-                    if( x == 0 || y == 0 || y == vélocité.nY-1 || x == vélocité.nX-1){
-                        velTMP.c(x,y, new Vecteur2D(Math.random()*100.0,0.0));
+                    if( x == 0 /* || y == 0 || y == vélocité.nY-1 */ || x == vélocité.nX-1){
+                        velTMP.c(x,y, new Vecteur2D(Math.random()*50.0,0.0));
                     }
                 }
             }
-            while(divergenceTotale > 0.02*vélocité.nX*vélocité.nY){//for (int N = 0; N < 50; N++) {
-                System.out.println("Div: " + String.format("%.2E",divergenceTotale/((double)(vélocité.nX*vélocité.nY))) + ", Iter: " + iter);
+            //for (int x = 0; x < vélocité.nX; x++) {
+            //    for (int y = 0; y < vélocité.nY; y++) {
+            //        if( x == 0 /* || y == 0 || y == vélocité.nY-1 */ || x == vélocité.nX-1){
+            //            vélocité.c(x,y,velTMP.c(x,y));
+            //            if((double)y-(10.0*(double)Math.floor(y/10)) < 0.1){
+            //                fumée.c[x][y] = Math.random()*5.0;
+            //            }
+            //        }
+            //        //vélocité.c(vélocité.nX/2,vélocité.nY/2,dir);
+            //        //fumée.c[vélocité.nX/2][vélocité.nY/2] = Math.random()*5.0;
+            //    }
+            //}
+            //vélocité.addi(new Vecteur2D(0.0,-0.098));
+            //vélocité.addi(pression.grad(obstacle).mult(new Vecteur2D(-10.0)));
+            for (int x = 0; x < vélocité.nX; x++) {
+                for (int y = 0; y < vélocité.nY; y++) {
+                    fumée.c[x][y] += Math.random()*Math.random()*1.0;
+                }
+            }
+            boolean basc = false;
+            for (int N = 0; N < 50; N++) {//while(divergenceTotale > 0.02*vélocité.nX*vélocité.nY){//for (int N = 0; N < 50; N++) {
+                basc = !basc;
+                //System.out.println("Div: " + String.format("%.2E",divergenceTotale/((double)(vélocité.nX*vélocité.nY))) + ", Iter: " + iter);
                 iter++;
                 for (int x = 0; x < vélocité.nX; x++) {
                     for (int y = 0; y < vélocité.nY; y++) {
-                        if( x == 0 || y == 0 || y == vélocité.nY-1 || x == vélocité.nX-1){
-                            vélocité.c(x,y,velTMP.c(x,y));
-                            if((double)y-(10.0*(double)Math.floor(y/10)) < 0.1){
-                                fumée.c[x][y] = Math.random()*5.0;
-                            }
+                        //if( x == 0 /* || y == 0 || y == vélocité.nY-1 */ || x == vélocité.nX-1){
+                            //vélocité.c(x,y,velTMP.c(x,y));
+                            //if((double)y-(10.0*(double)Math.floor(y/10)) < 0.1){
+                                fumée.c[x][y] += Math.random()*0.01/50.0;
+                            //}
+                        //}
+                    }
+                }
+                for (int x1 = -20; x1 <= 20; x1++) {
+                    for (int y1 = -20; y1 <= 20; y1++) {
+                        if(x1*x1 + y1*y1 <= 2*2){
+                            vélocité.c(vélocité.nX/2 + x1,vélocité.nY/2 + y1,dir);
+                            fumée.c[vélocité.nX/2 + x1][vélocité.nY/2 + y1] += Math.random()*1.0/50.0;
                         }
-                        //vélocité.c(vélocité.nX/2,vélocité.nY/2,dir);
-                        //fumée.c[vélocité.nX/2][vélocité.nY/2] = Math.random()*5.0;
                     }
                 }
                 //vélocité.retirerDiv(1, obstacle);
                 double Dx = vélocité.L/(double)vélocité.nX;
                 double Dy = vélocité.H/(double)vélocité.nY;
-                for (int x = 0; x < vélocité.nX; x++) {
-                    for (int y = 0; y < vélocité.nY; y++) {
-                        //pression.c[x][y] = 10.0;
+                for (int x = (basc?0:vélocité.nX-1); basc?(x < vélocité.nX):(x>=0); x += (basc?1:-1)) {
+                    for (int y = (basc?0:vélocité.nY-1); basc?(y < vélocité.nY):(y>=0); y += (basc?1:-1)) {
+                        if(obstacle != null && obstacle.c[x][y] < 0.001){
+                            vélocité.cFX[x][y].mult(new Vecteur2D(0.0,1.0));
+                            vélocité.cFY[x][y].mult(new Vecteur2D(1.0,0.0));
+                            vélocité.cFX[x+1][y].mult(new Vecteur2D(0.0,1.0));
+                            vélocité.cFY[x][y+1].mult(new Vecteur2D(1.0,0.0));
+                            continue;
+                        }
+                        //pression.c[x][y] = 1000.0;
                         //bd.miseÀJour(vélocité, pression.copier().mult(100.0));
                         //bd.fumée.remplir(0.0);
                         //bd.fumée.c[x][y] = 10.0;
@@ -104,7 +138,7 @@ public class App {
                             gradX0 = V2.scal(vélocité.cFX[x][y],new V2(-1.0,0.0)) * Dy;
                             n++;
                         }
-                        if(x > 0 && (obstacle == null || obstacle.c[x-1][y] > 0.001)){
+                        if(x < vélocité.nX-1 && (obstacle == null || obstacle.c[x+1][y] > 0.001)){
                             gradX1 = V2.scal(vélocité.cFX[x+1][y],new V2(1.0,0.0)) * Dy;
                             n++;
                         }
@@ -118,18 +152,23 @@ public class App {
                         }
 
                         Double D = (gradX0 + gradX1 + gradY0 + gradY1)/n;
+                        //pression.cA(x,y,D);
 
                         if(x > 0 && (obstacle == null || obstacle.c[x-1][y] > 0.001)){
                             vélocité.cFX[x][y].sous(new V2(-1.0,0.0).mult(D/Dy));
+                            //vélocité.cFX[x][y].mult(new Vecteur2D(1.0,0.0));
                         }
-                        if(x > 0 && (obstacle == null || obstacle.c[x-1][y] > 0.001)){
+                        if(x < vélocité.nX-1 && (obstacle == null || obstacle.c[x+1][y] > 0.001)){
                             vélocité.cFX[x+1][y].sous(new V2(1.0,0.0).mult(D/Dy));
+                            //vélocité.cFX[x][y].mult(new Vecteur2D(1.0,0.0));
                         }
                         if(y > 0 && (obstacle == null || obstacle.c[x][y-1] > 0.001)){
                             vélocité.cFY[x][y].sous(new V2(0.0,-1.0).mult(D/Dx));
+                            //vélocité.cFY[x][y].mult(new Vecteur2D(0.0,1.0));
                         }
                         if( y < vélocité.nY-1 && (obstacle == null || obstacle.c[x][y+1] > 0.001)){
                             vélocité.cFY[x][y+1].sous(new V2(0.0,1.0).mult(D/Dx));
+                            //vélocité.cFY[x][y].mult(new Vecteur2D(0.0,1.0));
                         }
                         vélocité.c[x][y] = V2.addi(V2.addi(vélocité.cFX[x][y],vélocité.cFX[x+1][y]),V2.addi(vélocité.cFY[x][y],vélocité.cFY[x][y+1])).mult(1.0/4.0);
                         if(obstacle != null && obstacle.c[x][y] < 0.001){
@@ -140,22 +179,30 @@ public class App {
                             System.currentTimeMillis();
                         }
 
-                        //pression =  vélocité.Div(obstacle).mult(-1.0);
+                        //pression = vélocité.Div(obstacle).mult(-1.0);
+                        //for (int x1 = -20; x1 <= 20; x1++) {
+                        //    for (int y1 = -20; y1 <= 20; y1++) {
+                        //        if(x1*x1 + y1*y1 <= 2*2){
+                        //            pression.c[4  + x1][obstacle.nY/2 + y1] = -1.0;
+                        //        }
+                        //    }
+                        //}
                         //pression.remplir(0.0);
-                        //bd.miseÀJour(vélocité, pression.copier().mult(100.0));
+                        //bd.miseÀJour(vélocité, pression);
                         //Thread.sleep((long)(Math.abs(D)*300.0));
                     }
                 }
-                if(Math.floorMod(iter,10) == 0){
-                    divergenceTotale = 0.0;
-                    pression = vélocité.Div(obstacle).mult(-1.0);
-                    //bd.miseÀJour(vélocité, pression.copier().mult(100.0));
-                    for (int i = 0; i < pression.nX; i++) {
-                        for (int j = 0; j < pression.nY; j++) {
-                            divergenceTotale += Math.abs(pression.c[i][j]);
-                        }
-                    }
-                }
+                //if(Math.floorMod(iter,10) == 0){
+                //    //Thread.sleep(300);
+                //    divergenceTotale = 0.0;
+                //    Champ2V1 divergence = vélocité.Div(obstacle).mult(-1.0);
+                //    bd.miseÀJour(vélocité, divergence.copier().mult(100.0));
+                //    for (int i = 0; i < pression.nX; i++) {
+                //        for (int j = 0; j < pression.nY; j++) {
+                //            divergenceTotale += Math.abs(divergence.c[i][j]);
+                //        }
+                //    }
+                //}
                 //pression = vélocité.Div(obstacle).mult(-1.0);
                 //vélocité.addi(pression.grad(obstacle).mult(new Vecteur2D(-1.0)));
                 //vélocité.addi( pression.grad(null).mult(new Vecteur2D(-1.0)));
@@ -163,7 +210,7 @@ public class App {
                 //bd.miseÀJour(vélocité, pression.copier().mult(100.0));
             }
 
-            for (int N = 0; N < 10; N++) {
+            for (int N = 0; N < 5; N++) {
                 Champ2V2 tmp = new Champ2V2(vélocité);
                 Champ2V1 tmp2 = new Champ2V1(fumée);
                 Champ2V1 tmp3 = new Champ2V1(pression);
@@ -171,8 +218,14 @@ public class App {
                 //tmp2.remplir(0);
                 for (int x = 0; x < vélocité.nX; x++) {
                     for (int y = 0; y < vélocité.nY; y++) {
+                        //bd.miseÀJour(tmp, tmp3);
+                        //Thread.sleep(30);
                         if(obstacle.c[x][y] < 0.001){
                             tmp2.c[x][y] = -1.0;
+                            tmp.cFX[x][y].mult(new Vecteur2D(0.0,1.0));
+                            tmp.cFY[x][y].mult(new Vecteur2D(1.0,0.0));
+                            tmp.cFX[x+1][y].mult(new Vecteur2D(0.0,1.0));
+                            tmp.cFY[x][y+1].mult(new Vecteur2D(1.0,0.0));
                             continue;
                         }
                         //Champ2V1 tmp4 = new Champ2V1(tmp3);
@@ -180,29 +233,31 @@ public class App {
                         //bd.miseÀJour(tmp, tmp4.mult(100.0));
                         //Thread.sleep(30);
 
-                        Vecteur2D vel = vélocité.c((double)x/(double)(vélocité.nX-1), (double)y/(double)(vélocité.nY-1)).mult(0.5/10.0);
+                        Vecteur2D vel = vélocité.c((double)x/(double)(vélocité.nX-1), (double)y/(double)(vélocité.nY-1)).mult(0.2/5.0);
                         double éX = ((double)x/(double)(vélocité.nX-1))+((double)vel.x/vélocité.L);
                         double éY = ((double)y/(double)(vélocité.nY-1))+((double)vel.y/vélocité.H);
-                        //if(éX >= 0.0 && éX <= 1.0 && éY >= 0.0 && éY <= 1.0){
-                        //    tmp.c[x][y] = vélocité.c(éX,éY);
-                        //}else{
-                        //    tmp.c[x][y] = new Vecteur2D(0.0);
-                        //}
-                        tmp.cA(éX,éY, vélocité.c(x,y));
-                        tmp.cA(x,y, vélocité.c(x,y).opposé() );
-                        //if(éX >= 0.0 && éX <= 1.0 && éY >= 0.0 && éY <= 1.0){
-                        //    tmp2.c[x][y] = fumée.c(éX,éY);
-                        //}else{
-                        //    tmp2.c[x][y] = 0.0;
-                        //}
-                        tmp2.cA(éX,éY, fumée.c[x][y]);
-                        tmp2.c[x][y] -= fumée.c[x][y];
-                        
-                        if(Double.isNaN(tmp3.c[x][y]) || Double.isInfinite(tmp3.c[x][y])){
-                            tmp3.c[x][y] = 1.0;
+                        if(obstacle.c(éX,éY) > 0.001){
+                            //if(éX >= 0.0 && éX <= 1.0 && éY >= 0.0 && éY <= 1.0){
+                            //    tmp.c[x][y] = vélocité.c(éX,éY);
+                            //}else{
+                            //    tmp.c[x][y] = new Vecteur2D(0.0);
+                            //}
+                            tmp.cA(éX,éY, vélocité.c(x,y));
+                            tmp.cA(x,y, vélocité.c(x,y).opposé() );
+                            //if(éX >= 0.0 && éX <= 1.0 && éY >= 0.0 && éY <= 1.0){
+                            //    tmp2.c[x][y] = fumée.c(éX,éY);
+                            //}else{
+                            //    tmp2.c[x][y] = 0.0;
+                            //}
+                            tmp2.cA(éX,éY, fumée.c[x][y]);
+                            tmp2.c[x][y] -= fumée.c[x][y];
+                            
+                            if(Double.isNaN(tmp3.c[x][y]) || Double.isInfinite(tmp3.c[x][y])){
+                                tmp3.c[x][y] = 1.0;
+                            }
+                            tmp3.cA(éX,éY, pression.c[x][y]);
+                            tmp3.c[x][y] -= pression.c[x][y];
                         }
-                        tmp3.cA(éX,éY, pression.c[x][y]);
-                        tmp3.c[x][y] -= pression.c[x][y];
                         if(obstacle.c(éX,éY) < 0.001){
                             tmp.c(x,y,new Vecteur2D(0.0));
                             tmp2.c[x][y] = -1.0;
@@ -212,14 +267,30 @@ public class App {
                         //bd.miseÀJour(tmp, tmp3.copier().mult(100.0));
                     }
                 }
+                for (int x = 0; x < vélocité.nX; x++) {
+                    for (int y = 0; y < vélocité.nY; y++) {
+                        if(obstacle.c[x][y] < 0.001){
+                            tmp.c(x,y,new Vecteur2D(0.0));
+                            tmp.cFX[x][y].mult(new Vecteur2D(0.0,1.0));
+                            tmp.cFY[x][y].mult(new Vecteur2D(1.0,0.0));
+                            tmp.cFX[x+1][y].mult(new Vecteur2D(0.0,1.0));
+                            tmp.cFY[x][y+1].mult(new Vecteur2D(1.0,0.0));
+                        }
+                    }
+                }
                 vélocité.copier(tmp);
                 fumée.copier(tmp2);
                 pression.copier(tmp3);
             }
             //fumée.diffuser(3, 0.01);
             //vélocité.diffuser(3, 0.1);
-            vélocité.mult(new Vecteur2D(0.99));
-            pression = vélocité.Div(obstacle).mult(-1.0);
+            for (int i = 0; i < fumée.nX; i++) {
+                for (int j = 0; j < fumée.nY; j++) {
+                    fumée.c[i][j] = Math.max(fumée.c[i][j]-0.26,0.0);
+                }
+            }
+            //vélocité.mult(new Vecteur2D(0.999));
+            pression.addi(vélocité.Div(obstacle).mult(-1.0));
             bd.miseÀJour(vélocité, fumée);
             if(!thread.isAlive()){
                 thread = new Thread(bd);
@@ -276,7 +347,7 @@ public class App {
                     continue;
                 }
                 dessinerChamp(fumée, 1, g, frame);
-                dessinerChamp(vélocité, 2, g, frame);
+                dessinerChamp(vélocité, 5, g, frame);
                 SwingUtilities.updateComponentTreeUI(frame);
                 try {
                     Thread.sleep(30);
@@ -289,8 +360,17 @@ public class App {
     }
 
     public static void dessinerChamp(Champ2V2 champ, int saut, Graphics2D g, JFrame frame){
+        g.setColor(Color.GRAY);
         double cL = (double)TailleX/(double)champ.nX;
         double cH = (double)TailleY/(double)champ.nY;
+        for (int x = 0; x < champ.nX; x++) {
+            //g.drawLine((int)((double)x*cL), 0, (int)((double)x*cL), (int)champ.H);
+        }
+        for (int y = 0; y < champ.nY; y++) {
+            //g.drawLine(0,(int)((double)y*cH), (int)champ.L, (int)((double)y*cH));
+        }
+        cL = (double)TailleX/(double)champ.nX;
+        cH = (double)TailleY/(double)champ.nY;
         //for (int x = 0; x < champ.nX; x++) {
         //    for (int y = 0; y < champ.nY; y++) {
         //        g.setColor(new Color((int)((1.0-1.0/(Math.abs(champ.c[x][y].x)+1.0))*255.0),(int)((1.0-1.0/(Math.abs(champ.c[x][y].y)+1.0))*255.0),0));
@@ -301,9 +381,9 @@ public class App {
         //}
         cL = (double)saut*(double)TailleX/(double)champ.nX;
         cH = (double)saut*(double)TailleY/(double)champ.nY;
-        g.setColor(Color.GREEN);
         for (int x = 0; x < champ.nX/saut; x++) {
             for (int y = 0; y < champ.nY/saut; y++) {
+                g.setColor(Color.GREEN);
                 Vecteur2D V = champ.c((double)(x*saut)/(double)(champ.nX-1),(double)(y*saut)/(double)(champ.nY-1)).copier();
                 double L = V.longueur();
                 V.norm();
@@ -314,7 +394,30 @@ public class App {
                 int c = (int)((double)x*cL + (cL/2) + lX);
                 int d = (int)((double)TailleY - (double)(y+1)*cH + (cH/2.0) - lY);
                 g.drawLine(a, b, c, d);
-                //SwingUtilities.updateComponentTreeUI(frame);
+                if(champ.UtiliseFaces){
+                    g.setColor(Color.BLUE);
+                    V = champ.cFX[x*saut][y*saut].copier();
+                    L = V.longueur();
+                    V.norm();
+                    lX = (int)((1.0-1.0/(L+1.0))*Math.min(cL, cH)*V.x*0.5);
+                    lY = (int)((1.0-1.0/(L+1.0))*Math.min(cL, cH)*V.y*0.5);
+                    a = (int)((double)x*cL);
+                    b = (int)((double)TailleY - (double)(y+1)*cH + (cH/2.0));
+                    c = (int)((double)x*cL + lX);
+                    d = (int)((double)TailleY - (double)(y+1)*cH + (cH/2.0) - lY);
+                    g.drawLine(a, b, c, d);
+
+                    V = champ.cFY[x*saut][y*saut].copier();
+                    L = V.longueur();
+                    V.norm();
+                    lX = (int)((1.0-1.0/(L+1.0))*Math.min(cL, cH)*V.x*0.5);
+                    lY = (int)((1.0-1.0/(L+1.0))*Math.min(cL, cH)*V.y*0.5);
+                    a = (int)((double)x*cL + (cL/2.0));
+                    b = (int)((double)TailleY - (double)(y)*cH);
+                    c = (int)((double)x*cL + (cL/2.0) + lX);
+                    d = (int)((double)TailleY - (double)(y)*cH - lY);
+                    g.drawLine(a, b, c, d);
+                }
             }
         }
         System.currentTimeMillis();

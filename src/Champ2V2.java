@@ -246,8 +246,8 @@ public class Champ2V2 {
                         c[x][y].addi( v.c((double)x/(double)(v.nX-1),(double)y/(double)(v.nY-1)) );
                     }
                 }
-                for (int x = 0; x < nX+1; x++) {
-                    for (int y = 0; y < nY+1; y++) {
+                for (int x = 0; x < nX; x++) {
+                    for (int y = 0; y < nY; y++) {
                         if(x != 0){
                             cFX[x][y] = V2.addi(c[x][y], c[x-1][y]).mult(1.0/2.0);
                         }else{
@@ -258,8 +258,16 @@ public class Champ2V2 {
                         }else{
                             cFY[x][y] = c[x][y];
                         }
-                        cFX[x+1][y] = V2.addi(c[x][y], c[x+1][y]).mult(1.0/2.0);
-                        cFY[x][y+1] = V2.addi(c[x][y], c[x][y+1]).mult(1.0/2.0);
+                        if(x != nX-1){
+                            cFX[x+1][y] = V2.addi(c[x][y], c[x+1][y]).mult(1.0/2.0);
+                        }else{
+                            cFX[x+1][y] = V2.mult(c[x][y],new V2(0.0,1.0));
+                        }
+                        if(y != nY-1){
+                            cFY[x][y+1] = V2.addi(c[x][y], c[x][y+1]).mult(1.0/2.0);
+                        }else{
+                            cFY[x][y+1] = V2.mult(c[x][y],new V2(1.0,0.0));
+                        }
                     }
                 }
             }
@@ -531,7 +539,7 @@ public class Champ2V2 {
                         gradX0 = V2.scal(cFX[x][y],new V2(-1.0,0.0)) * Dy;
                         n++;
                     }
-                    if(x > 0 && (obstacle == null || obstacle.c[x-1][y] > 0.001)){
+                    if(x < nX-1 && (obstacle == null || obstacle.c[x+1][y] > 0.001)){
                         gradX1 = V2.scal(cFX[x+1][y],new V2(1.0,0.0)) * Dy;
                         n++;
                     }
